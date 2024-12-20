@@ -21,10 +21,10 @@ We understand that data security is paramount. That's why SBMS comes with built-
 
 What sets SBMS apart is its comprehensive reporting capabilities. Make informed decisions with detailed financial and inventory reports, giving you a clear picture of your business's health at any given moment. By choosing SBMS you're gaining a powerful tool that will help drive your business forward.
 
-
-[YouTube Demo Video](https://youtu.be/TwM4x0S1GDw)
-For more details about the project, refer to the  [About Section](./ABOUT.md).
-
+---
++ [YouTube Demo Video](https://youtu.be/TwM4x0S1GDw)
++ For more details about the project, refer to the  [About Section](./ABOUT.md).
+---
 ## Installation
 
 ### Prerequisites
