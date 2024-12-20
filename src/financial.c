@@ -50,6 +50,8 @@ void financialMenu()
         {
             char startDate[11], endDate[11];
             validateDateInput(startDate);
+            while (getchar() != '\n')
+                ; // This consumes any remaining characters in the buffer
             validateDateInput(endDate);
             SalesReport report;
             generateSalesReport(startDate, endDate, &report);
@@ -62,11 +64,12 @@ void financialMenu()
             validateDateInput(startDate);
             printf("Start Date: %s\n", startDate);
             while (getchar() != '\n')
-                ; // This consumes any remaining characters in the buffer
+                ; 
 
             validateDateInput(endDate);
             printf("End Date: %s\n", endDate);
-
+            while (getchar() != '\n')
+                ; 
             ProfitReport report;
             generateProfitReport(startDate, endDate, &report);
         }

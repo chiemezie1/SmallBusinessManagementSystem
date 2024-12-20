@@ -1,4 +1,4 @@
-CC = gcc
+GGCC = gcc
 CFLAGS = -Wall -Wextra -std=c11 -I./include -I./test
 LDFLAGS = -lm
 

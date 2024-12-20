@@ -19,7 +19,11 @@ In today's fast-paced business environment, small business owners need a reliabl
 
 We understand that data security is paramount. That's why SBMS comes with built-in user authentication and data backup features, ensuring your business information remains secure. But we don't stop at security - SBMS is designed to grow with your business.
 
-What sets SBMS apart is its comprehensive reporting capabilities. Make informed decisions with detailed financial and inventory reports, giving you a clear picture of your business's health at any given moment. By choosing SBMS you're gaining a powerful tool that will help drive your business forward. 
+What sets SBMS apart is its comprehensive reporting capabilities. Make informed decisions with detailed financial and inventory reports, giving you a clear picture of your business's health at any given moment. By choosing SBMS you're gaining a powerful tool that will help drive your business forward.
+
+
+[YouTube Demo Video](https://youtu.be/TwM4x0S1GDw)
+For more details about the project, refer to the  [About Section](./ABOUT.md).
 
 ## Installation
 
@@ -102,5 +106,4 @@ SBMS is designed to be easily customizable. You can modify the source code to ad
 Contributions are welcome! Fork the repository, create a feature branch, commit changes, and submit a pull request.
 
 ## License
-
-SBMS is licensed under the MIT License. 
+See License. 
