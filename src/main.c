@@ -1,21 +1,38 @@
+/*
+ * =====================================================================================
+ * File: main.c
+ * Description: Contains the main entry point for the Small Business Management 
+ *              System (SBMS), enabling users to manage inventory, orders, 
+ *              customers, finances, and system settings. It includes an admin 
+ *              interface for managing users and settings.
+ *
+ * Author: Chiemezie Agbo
+ * Date: 20-12-2024
+ * Version: 1.0
+ * =====================================================================================
+ */
+
 #define _DEFAULT_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <time.h>
-#include "common.h"
-#include "admin.h"
-#include "inventory.h"
-#include "orders.h"
-#include "customers.h"
-#include "financial.h"
-#include "utils.h"
+#include "../include/common.h"
+#include "../include/admin.h"
+#include "../include/inventory.h"
+#include "../include/orders.h"
+#include "../include/customers.h"
+#include "../include/financial.h"
+#include "../include/utils.h"
 
 #define USERS_FILE "data/users.dat"
 
 #define CLEAR_SCREEN() printf("\033[H\033[J")
 
+/**
+ * @brief Displays the application logo
+ */
 void displayLogo() {
     printf("\033[1;36m");
     printf("   _____ __  __  _____ _____ \n");
@@ -28,6 +45,10 @@ void displayLogo() {
     printf("\nSmall Business Management System\n\n");
 }
 
+/**
+ * @brief Displays the main menu based on user access level
+ * @param is_admin 1 if the user is an admin, 0 otherwise
+ */
 void displayMenu(int is_admin) {
     printf("\033[1;33m");
     printf("╔════════════════════════════╗\n");
@@ -46,6 +67,9 @@ void displayMenu(int is_admin) {
     printf("\033[0m");
 }
 
+/**
+ * @brief Displays a loading animation
+ */
 void displayLoadingAnimation() {
     const char* frames[] = {"|", "/", "-", "\\"};
     for (int i = 0; i < 20; i++) {
@@ -57,6 +81,10 @@ void displayLoadingAnimation() {
     printf("\n");
 }
 
+/**
+ * @brief The main function of the application
+ * @return int 0 on successful execution
+ */
 int main(void) {
     initializeSystem();
     

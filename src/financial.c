@@ -1,17 +1,36 @@
-#include "financial.h"
-#include "inventory.h"
-#include "utils.h"
+/*
+ * =====================================================================================
+ * File: financial.c
+ * Description: Provides functionality for generating financial reports, such as 
+ *              sales, profit, and inventory value. Reports are generated based 
+ *              on a date range or current inventory data, offering detailed 
+ *              insights for financial decision-making.
+ *
+ * Author: Chiemezie Agbo
+ * Date: 20-12-2024
+ * Version: 1.0
+ * =====================================================================================
+ */
+
+#include "../include/financial.h"
+#include "../include/orders.h"
+#include "../include/inventory.h"
+#include "../include/utils.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 
 #define ORDERS_FILE "data/orders.dat"
 #define INVENTORY_FILE "data/inventory.dat"
 
-void financialMenu() {
+/**
+ * @brief Displays the financial management menu and handles user choices
+ */
+void financialMenu()
+{
     int choice;
-    do {
+    do
+    {
         printf("\033[1;36m");
         printf("╔════════════════════════════╗\n");
         printf("║   Financial Management     ║\n");
@@ -23,171 +42,205 @@ void financialMenu() {
         printf("╚════════════════════════════╝\n");
         printf("\033[0m");
         printf("Enter your choice: ");
-        scanf("%d", &choice);
+        choice = validateIntInput(1, 4);
 
-        switch (choice) {
-            case 1:
-                generateSalesReport();
-                break;
-            case 2:
-                generateProfitReport();
-                break;
-            case 3:
-                generateInventoryValue();
-                break;
-            case 4:
-                return;
-            default:
-                printf("Invalid choice. Please try again.\n");
+        switch (choice)
+        {
+        case 1:
+        {
+            char startDate[11], endDate[11];
+            validateDateInput(startDate);
+            validateDateInput(endDate);
+            SalesReport report;
+            generateSalesReport(startDate, endDate, &report);
+        }
+        break;
+        case 2:
+        {
+            char startDate[11], endDate[11];
+
+            validateDateInput(startDate);
+            printf("Start Date: %s\n", startDate);
+            while (getchar() != '\n')
+                ; // This consumes any remaining characters in the buffer
+
+            validateDateInput(endDate);
+            printf("End Date: %s\n", endDate);
+
+            ProfitReport report;
+            generateProfitReport(startDate, endDate, &report);
+        }
+        break;
+        case 3:
+        {
+            InventoryValueReport report;
+            generateInventoryValue(&report);
+        }
+        break;
+        case 4:
+            return;
         }
     } while (1);
 }
 
-void generateSalesReport() {
+/**
+ * @brief Generates a sales report for a given date range
+ * @param startDate The start date of the report period
+ * @param endDate The end date of the report period
+ * @param report Pointer to the SalesReport struct to store the generated report
+ */
+void generateSalesReport(const char *startDate, const char *endDate, SalesReport *report)
+{
     FILE *file = fopen(ORDERS_FILE, "rb");
-    if (file == NULL) {
+    if (file == NULL)
+    {
         printf("Error opening file!\n");
         return;
     }
 
+    report->totalSales = 0;
+    report->orderCount = 0;
+    report->averageOrderValue = 0;
+
     Order order;
-    double totalSales = 0;
-    int orderCount = 0;
-    time_t startDate, endDate;
+    time_t start = parseDate(startDate);
+    time_t end = parseDate(endDate);
 
-    printf("Enter start date (YYYY-MM-DD): ");
-    char dateStr[11];
-    scanf("%s", dateStr);
-    startDate = parseDate(dateStr);
-
-    printf("Enter end date (YYYY-MM-DD): ");
-    scanf("%s", dateStr);
-    endDate = parseDate(dateStr);
-
-    printf("\033[1;34m");
-    printf("Sales Report from %s to %s\n", formatDate(startDate), formatDate(endDate));
-    printf("====================================================================================\n");
-    printf("%-5s %-15s %-20s %-15s\n", "ID", "Customer ID", "Order Date", "Total Amount");
-    printf("====================================================================================\n");
-    printf("\033[0m");
-
-    while (fread(&order, sizeof(Order), 1, file)) {
-        if (order.orderDate >= startDate && order.orderDate <= endDate) {
-            char date[20];
-            strftime(date, sizeof(date), "%Y-%m-%d %H:%M:%S", localtime(&order.orderDate));
-            printf("%-5d %-15d %-20s $%-14.2f\n", order.id, order.customerId, date, order.totalAmount);
-            totalSales += order.totalAmount;
-            orderCount++;
+    while (fread(&order, sizeof(Order), 1, file))
+    {
+        if (order.orderDate >= start && order.orderDate <= end)
+        {
+            report->totalSales += order.totalAmount;
+            report->orderCount++;
         }
     }
 
-    printf("\033[1;32m");
-    printf("====================================================================================\n");
-    printf("Total Sales: $%.2f\n", totalSales);
-    printf("Total Orders: %d\n", orderCount);
-    printf("Average Order Value: $%.2f\n", orderCount > 0 ? totalSales / orderCount : 0);
-    printf("\033[0m");
-
     fclose(file);
+
+    if (report->orderCount > 0)
+    {
+        report->averageOrderValue = report->totalSales / report->orderCount;
+    }
+
+    printf("\033[1;34m");
+    printf("Sales Report from %s to %s\n", startDate, endDate);
+    printf("====================================================================================\n");
+    printf("Total Sales: $%.2f\n", report->totalSales);
+    printf("Total Orders: %d\n", report->orderCount);
+    printf("Average Order Value: $%.2f\n", report->averageOrderValue);
+    printf("\033[0m");
 }
 
-void generateProfitReport() {
+/**
+ * @brief Generates a profit report for a given date range
+ * @param startDate The start date of the report period
+ * @param endDate The end date of the report period
+ * @param report Pointer to the ProfitReport struct to store the generated report
+ */
+void generateProfitReport(const char *startDate, const char *endDate, ProfitReport *report)
+{
     FILE *file = fopen(ORDERS_FILE, "rb");
-    if (file == NULL) {
+    if (file == NULL)
+    {
         printf("Error opening file!\n");
         return;
     }
 
+    report->totalRevenue = 0;
+    report->totalCost = 0;
+    report->totalProfit = 0;
+    report->profitMargin = 0;
+
     Order order;
-    double totalRevenue = 0;
-    double totalProfit = 0;
-    int orderCount = 0;
-    time_t startDate, endDate;
-
-    printf("Enter start date (YYYY-MM-DD): ");
-    char dateStr[11];
-    scanf("%s", dateStr);
-    startDate = parseDate(dateStr);
-
-    printf("Enter end date (YYYY-MM-DD): ");
-    scanf("%s", dateStr);
-    endDate = parseDate(dateStr);
+    time_t start = parseDate(startDate);
+    time_t end = parseDate(endDate);
 
     printf("\033[1;34m");
-    printf("Profit Report from %s to %s\n", formatDate(startDate), formatDate(endDate));
+    printf("Profit Report from %s to %s\n", startDate, endDate);
     printf("====================================================================================\n");
     printf("%-5s %-15s %-20s %-15s %-15s\n", "ID", "Order Date", "Revenue", "Cost", "Profit");
     printf("====================================================================================\n");
     printf("\033[0m");
 
-    while (fread(&order, sizeof(Order), 1, file)) {
-        if (order.orderDate >= startDate && order.orderDate <= endDate) {
+    while (fread(&order, sizeof(Order), 1, file))
+    {
+        if (order.orderDate >= start && order.orderDate <= end)
+        {
             char date[20];
             strftime(date, sizeof(date), "%Y-%m-%d %H:%M:%S", localtime(&order.orderDate));
             double orderCost = order.totalAmount - order.profit;
             printf("%-5d %-15s $%-14.2f $%-14.2f $%-14.2f\n", order.id, date, order.totalAmount, orderCost, order.profit);
-            totalRevenue += order.totalAmount;
-            totalProfit += order.profit;
-            orderCount++;
+            report->totalRevenue += order.totalAmount;
+            report->totalCost += orderCost;
+            report->totalProfit += order.profit;
         }
     }
 
     fclose(file);
 
-    double profitMargin = (totalRevenue > 0) ? (totalProfit / totalRevenue) * 100 : 0;
+    if (report->totalRevenue > 0)
+    {
+        report->profitMargin = (report->totalProfit / report->totalRevenue) * 100;
+    }
 
     printf("\033[1;32m");
     printf("====================================================================================\n");
-    printf("Total Revenue: $%.2f\n", totalRevenue);
-    printf("Total Cost: $%.2f\n", totalRevenue - totalProfit);
-    printf("Total Profit: $%.2f\n", totalProfit);
-    printf("Total Orders: %d\n", orderCount);
-    printf("Actual Profit Margin: %.2f%%\n", profitMargin);
+    printf("Total Revenue: $%.2f\n", report->totalRevenue);
+    printf("Total Cost: $%.2f\n", report->totalCost);
+    printf("Total Profit: $%.2f\n", report->totalProfit);
+    printf("Profit Margin: %.2f%%\n", report->profitMargin);
     printf("\033[0m");
 }
 
-
-void generateInventoryValue() {
+/**
+ * @brief Generates an inventory value report
+ * @param report Pointer to the InventoryValueReport struct to store the generated report
+ */
+void generateInventoryValue(InventoryValueReport *report)
+{
     FILE *file = fopen(INVENTORY_FILE, "rb");
-    if (file == NULL) {
-        printf("Error opening file!\n");
+    if (file == NULL)
+    {
+        printf("Error opening inventory file!\n");
         return;
     }
 
-    InventoryItem item;
-    double totalValue = 0;
-    int itemCount = 0;
-    int validItemCount = 0;
+    report->totalItems = 0;
+    report->totalCost = 0;
+    report->totalValue = 0;
 
+    InventoryItem item;
     printf("\033[1;34m");
     printf("Inventory Value Report\n");
     printf("====================================================================================\n");
-    printf("%-5s %-20s %-10s %-15s %-15s\n", "ID", "Name", "Quantity", "Unit Price", "Total Value");
+    printf("%-5s %-30s %-10s %-15s %-15s %-15s\n", "ID", "Name", "Quantity", "Cost", "Price", "Total Value");
     printf("====================================================================================\n");
     printf("\033[0m");
 
-    while (fread(&item, sizeof(InventoryItem), 1, file)) {
-        itemCount++;
-        if (item.quantity > 0 && item.price > 0) {
-            double itemValue = item.price * item.quantity;
-            printf("%-5d %-20s %-10d $%-14.2f $%-14.2f\n", item.id, item.name, item.quantity, item.price, itemValue);
-            totalValue += itemValue;
-            validItemCount++;
-        }
+    while (fread(&item, sizeof(InventoryItem), 1, file))
+    {
+        double itemTotalCost = item.cost * item.quantity;
+        double itemTotalValue = item.price * item.quantity;
+
+        printf("%-5d %-30s %-10d $%-14.2f $%-14.2f $%-14.2f\n",
+               item.id, item.name, item.quantity, item.cost, item.price, itemTotalValue);
+
+        report->totalItems += item.quantity;
+        report->totalCost += itemTotalCost;
+        report->totalValue += itemTotalValue;
     }
 
     fclose(file);
 
+    double potentialProfit = report->totalValue - report->totalCost;
+    double profitMargin = (report->totalValue > 0) ? (potentialProfit / report->totalValue) * 100 : 0;
+
     printf("\033[1;32m");
     printf("====================================================================================\n");
-    printf("Total Inventory Value: $%.2f\n", totalValue);
-    printf("Total Items: %d\n", itemCount);
-    printf("Items with Value: %d\n", validItemCount);
-    if (validItemCount > 0) {
-        printf("Average Item Value: $%.2f\n", totalValue / validItemCount);
-    } else {
-        printf("Average Item Value: $0.00\n");
-    }
+    printf("Total Items: %d\n", report->totalItems);
+    printf("Total Cost: $%.2f\n", report->totalCost);
+    printf("Total Value: $%.2f\n", report->totalValue);
+    printf("Potential Profit: $%.2f\n", potentialProfit);
+    printf("Potential Profit Margin: %.2f%%\n", profitMargin);
     printf("\033[0m");
 }
-

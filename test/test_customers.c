@@ -1,4 +1,5 @@
-#include "../src/customers.h"
+#include "../include/customers.h"
+#include "../include/common.h"
 #include "unity.h"
 #include <stdio.h>
 #include <string.h>

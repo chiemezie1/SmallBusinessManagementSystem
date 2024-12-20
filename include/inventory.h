@@ -1,7 +1,7 @@
 #ifndef INVENTORY_H
 #define INVENTORY_H
 
-#include "common.h"
+#include "../include/common.h"
 
 void inventoryMenu();
 void addInventoryItem();
@@ -14,5 +14,4 @@ int generateUniqueInventoryId();
 void updateInventoryItemById(InventoryItem *item);
 
 #endif // INVENTORY_H
-
 

@@ -1,5 +1,19 @@
-#include "inventory.h"
-#include "utils.h"
+/*
+ * =====================================================================================
+ * File: inventory.c
+ * Description: Manages inventory items, including adding, updating, deleting, 
+ *              viewing, and searching. Inventory data is stored in a binary file 
+ *              (data/inventory.dat) and manipulated through various functions 
+ *              for persistence and inventory management.
+ *
+ * Author: Chiemezie Agbo
+ * Date: 20-12-2024
+ * Version: 1.0
+ * =====================================================================================
+ */
+
+#include "../include/inventory.h"
+#include "../include/utils.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -7,6 +21,9 @@
 
 #define INVENTORY_FILE "data/inventory.dat"
 
+/**
+ * @brief Displays the inventory management menu and handles user choices
+ */
 void inventoryMenu() {
     int choice;
     do {
@@ -47,6 +64,9 @@ void inventoryMenu() {
     } while (1);
 }
 
+/**
+ * @brief Adds a new inventory item to the system
+ */
 void addInventoryItem() {
     InventoryItem item;
     item.id = generateUniqueInventoryId();
@@ -71,6 +91,9 @@ void addInventoryItem() {
     printf("Item added successfully!\n");
 }
 
+/**
+ * @brief Updates an existing inventory item
+ */
 void updateInventoryItem() {
     int id;
     printf("Enter item ID to update: ");
@@ -94,6 +117,9 @@ void updateInventoryItem() {
     }
 }
 
+/**
+ * @brief Deletes an inventory item from the system
+ */
 void deleteInventoryItem() {
     int id;
     printf("Enter item ID to delete: ");
@@ -129,6 +155,9 @@ void deleteInventoryItem() {
     }
 }
 
+/**
+ * @brief Displays all inventory items in the system
+ */
 void viewAllInventoryItems() {
     FILE *file = fopen(INVENTORY_FILE, "rb");
     if (file == NULL) {
@@ -148,6 +177,9 @@ void viewAllInventoryItems() {
     fclose(file);
 }
 
+/**
+ * @brief Searches for inventory items based on a search term
+ */
 void searchInventoryItem() {
     char searchTerm[MAX_NAME_LENGTH];
     validateStringInput(searchTerm, MAX_NAME_LENGTH, "Enter search term: ");
@@ -178,6 +210,12 @@ void searchInventoryItem() {
     }
 }
 
+/**
+ * @brief Retrieves an inventory item by its ID
+ * @param id The ID of the inventory item to retrieve
+ * @param item Pointer to the InventoryItem struct to store the retrieved information
+ * @return int 1 if item found, 0 otherwise
+ */
 int getInventoryItemById(int id, InventoryItem *item) {
     FILE *file = fopen(INVENTORY_FILE, "rb");
     if (file == NULL) {
@@ -197,6 +235,10 @@ int getInventoryItemById(int id, InventoryItem *item) {
     return found;
 }
 
+/**
+ * @brief Generates a unique inventory item ID
+ * @return int The generated unique ID
+ */
 int generateUniqueInventoryId() {
     static int lastId = 0;
     FILE *file = fopen(INVENTORY_FILE, "rb");
@@ -212,6 +254,10 @@ int generateUniqueInventoryId() {
     return ++lastId;
 }
 
+/**
+ * @brief Updates an inventory item by its ID
+ * @param item Pointer to the InventoryItem struct with updated information
+ */
 void updateInventoryItemById(InventoryItem *item) {
     FILE *file = fopen(INVENTORY_FILE, "rb+");
     if (file == NULL) {

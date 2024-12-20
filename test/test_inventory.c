@@ -1,4 +1,4 @@
-#include "../src/inventory.h"
+#include "../include/inventory.h"
 #include "unity.h"
 #include <stdio.h>
 #include <string.h>

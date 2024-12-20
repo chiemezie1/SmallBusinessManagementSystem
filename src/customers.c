@@ -1,5 +1,20 @@
-#include "customers.h"
-#include "utils.h"
+/*
+ * =====================================================================================
+ * File: customers.c
+ * Description: Implements customer management functions including adding, updating, 
+ *              deleting, and searching for customers. The customer data is stored 
+ *              in a binary file (data/customers.dat) and accessed through 
+ *              read/write operations. Functions also handle generating unique 
+ *              customer IDs and managing customer information.
+ *
+ * Author: Chiemezie Agbo
+ * Date: 20-12-2024
+ * Version: 1.0
+ * =====================================================================================
+ */
+
+#include "../include/customers.h"
+#include "../include/utils.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -7,6 +22,10 @@
 
 #define CUSTOMERS_FILE "data/customers.dat"
 
+/**
+ * @brief Generates a unique customer ID
+ * @return int The generated unique ID
+ */
 int generateUniqueCustomerId() {
     static int lastId = 0;
     FILE *file = fopen(CUSTOMERS_FILE, "rb");
@@ -22,6 +41,9 @@ int generateUniqueCustomerId() {
     return ++lastId;
 }
 
+/**
+ * @brief Displays the customer management menu and handles user choices
+ */
 void customerMenu() {
     int choice;
     do {
@@ -42,13 +64,28 @@ void customerMenu() {
 
         switch (choice) {
             case 1:
-                addCustomer();
+                addCustomer(NULL);
                 break;
             case 2:
-                updateCustomer();
+                {
+                    int id;
+                    printf("Enter customer ID to update: ");
+                    id = validateIntInput(1, INT_MAX);
+                    Customer customer;
+                    if (getCustomerById(id, &customer)) {
+                        updateCustomer(&customer);
+                    } else {
+                        printf("Customer not found!\n");
+                    }
+                }
                 break;
             case 3:
-                deleteCustomer();
+                {
+                    int id;
+                    printf("Enter customer ID to delete: ");
+                    id = validateIntInput(1, INT_MAX);
+                    deleteCustomer(id);
+                }
                 break;
             case 4:
                 viewAllCustomers();
@@ -64,13 +101,25 @@ void customerMenu() {
     } while (1);
 }
 
-void addCustomer() {
-    Customer customer;
-    customer.id = generateUniqueCustomerId();
-    validateStringInput(customer.name, MAX_NAME_LENGTH, "Enter customer name: ");
-    validateStringInput(customer.email, MAX_EMAIL_LENGTH, "Enter customer email: ");
-    validateStringInput(customer.phone, MAX_PHONE_LENGTH, "Enter customer phone: ");
-    validateStringInput(customer.address, MAX_ADDRESS_LENGTH, "Enter customer address: ");
+/**
+ * @brief Adds a new customer to the system
+ * @param customer Pointer to the Customer struct to be added
+ */
+void addCustomer(Customer *customer) {
+    Customer newCustomer;
+    if (customer == NULL) {
+        customer = &newCustomer;
+    }
+
+    customer->id = generateUniqueCustomerId();
+    
+    // Clear the buffer before taking input
+    clearInputBuffer();
+
+    validateStringInput(customer->name, MAX_NAME_LENGTH, "Enter customer name: ");
+    validateStringInput(customer->email, MAX_EMAIL_LENGTH, "Enter customer email: ");
+    validateStringInput(customer->phone, MAX_PHONE_LENGTH, "Enter customer phone: ");
+    validateStringInput(customer->address, MAX_ADDRESS_LENGTH, "Enter customer address: ");
 
     FILE *file = fopen(CUSTOMERS_FILE, "ab");
     if (file == NULL) {
@@ -78,57 +127,64 @@ void addCustomer() {
         return;
     }
 
-    fwrite(&customer, sizeof(Customer), 1, file);
+    fwrite(customer, sizeof(Customer), 1, file);
     fclose(file);
 
-    printf("Customer added successfully with ID: %d!\n", customer.id);
+    printf("Customer added successfully with ID: %d!\n", customer->id);
 }
 
-void updateCustomer() {
-    int id;
-    printf("Enter customer ID to update: ");
-    id = validateIntInput(1, INT_MAX);
 
+/**
+ * @brief Updates an existing customer's information
+ * @param customer Pointer to the Customer struct with updated information
+ */
+void updateCustomer(Customer *customer) {
     FILE *file = fopen(CUSTOMERS_FILE, "rb+");
     if (file == NULL) {
         printf("Error opening file!\n");
         return;
     }
 
-    Customer customer;
+    Customer tempCustomer;
     int found = 0;
-    while (fread(&customer, sizeof(Customer), 1, file)) {
-        if (customer.id == id) {
-            printf("Enter new customer name: ");
-            scanf("%s", customer.name);
-            printf("Enter new customer email: ");
-            scanf("%s", customer.email);
-            printf("Enter new customer phone: ");
-            scanf("%s", customer.phone);
-            printf("Enter new customer address: ");
-            scanf("%s", customer.address);
 
-            fseek(file, -sizeof(Customer), SEEK_CUR);
-            fwrite(&customer, sizeof(Customer), 1, file);
+    // Locate the specific customer in the file
+    while (fread(&tempCustomer, sizeof(Customer), 1, file)) {
+        if (tempCustomer.id == customer->id) {
             found = 1;
             break;
         }
     }
 
+    if (!found) {
+        printf("Customer not found in the file!\n");
+        fclose(file);
+        return;
+    }
+
+    // Prompt for new details
+    validateStringInput(customer->name, MAX_NAME_LENGTH, "Enter new customer name: ");
+    validateStringInput(customer->email, MAX_EMAIL_LENGTH, "Enter new customer email: ");
+    validateStringInput(customer->phone, MAX_PHONE_LENGTH, "Enter new customer phone: ");
+    validateStringInput(customer->address, MAX_ADDRESS_LENGTH, "Enter new customer address: ");
+
+    // Move file pointer back to the position of the found customer
+    fseek(file, -sizeof(Customer), SEEK_CUR);
+
+    // Write the updated customer details back to the file
+    fwrite(customer, sizeof(Customer), 1, file);
+
     fclose(file);
 
-    if (found) {
-        printf("Customer updated successfully!\n");
-    } else {
-        printf("Customer not found!\n");
-    }
+    printf("Customer updated successfully!\n");
 }
+ 
 
-void deleteCustomer() {
-    int id;
-    printf("Enter customer ID to delete: ");
-    id = validateIntInput(1, INT_MAX);
-
+/**
+ * @brief Deletes a customer from the system
+ * @param id The ID of the customer to be deleted
+ */
+void deleteCustomer(int id) {
     FILE *file = fopen(CUSTOMERS_FILE, "rb");
     FILE *tempFile = fopen("data/temp_customers.dat", "wb");
     if (file == NULL || tempFile == NULL) {
@@ -159,6 +215,9 @@ void deleteCustomer() {
     }
 }
 
+/**
+ * @brief Displays all customers in the system
+ */
 void viewAllCustomers() {
     FILE *file = fopen(CUSTOMERS_FILE, "rb");
     if (file == NULL) {
@@ -178,6 +237,9 @@ void viewAllCustomers() {
     fclose(file);
 }
 
+/**
+ * @brief Searches for customers based on a search term
+ */
 void searchCustomer() {
     char searchTerm[MAX_NAME_LENGTH];
     printf("Enter search term: ");
@@ -209,6 +271,12 @@ void searchCustomer() {
     }
 }
 
+/**
+ * @brief Retrieves a customer by their ID
+ * @param id The ID of the customer to retrieve
+ * @param customer Pointer to the Customer struct to store the retrieved information
+ * @return int 1 if customer found, 0 otherwise
+ */
 int getCustomerById(int id, Customer *customer) {
     FILE *file = fopen(CUSTOMERS_FILE, "rb");
     if (file == NULL) {

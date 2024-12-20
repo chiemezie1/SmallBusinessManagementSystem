@@ -1,12 +1,29 @@
+/*
+ * =====================================================================================
+ * File: utils.c
+ * Description: Provides utility functions for system operations, including 
+ *              system initialization, date handling, user input validation, 
+ *              and buffer clearing. These utilities simplify common tasks 
+ *              for more efficient system development.
+ *
+ * Author: Chiemezie Agbo
+ * Date: 20-12-2024
+ * Version: 1.0
+ * =====================================================================================
+ */
+
 #define _XOPEN_SOURCE
 #include <time.h>
-#include "utils.h"
+#include "../include/utils.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 #include <limits.h>
 
+/**
+ * @brief Initializes the system by creating necessary directories
+ */
 void initializeSystem() {
     // Create data directory if it doesn't exist
     system("mkdir -p data");
@@ -15,18 +32,43 @@ void initializeSystem() {
     system("mkdir -p data/backup");
 }
 
+/**
+ * @brief Parses a date string into a time_t value
+ * @param dateStr The date string to parse (format: YYYY-MM-DD)
+ * @return time_t The parsed date as a time_t value
+ */
 time_t parseDate(const char *dateStr) {
     struct tm tm = {0};
     strptime(dateStr, "%Y-%m-%d", &tm);
     return mktime(&tm);
 }
 
+/**
+ * @brief Formats a time_t value into a date string
+ * @param timestamp The time_t value to format
+ * @return char* The formatted date string (format: YYYY-MM-DD)
+ */
 char* formatDate(time_t timestamp) {
     static char buffer[20];
     strftime(buffer, sizeof(buffer), "%Y-%m-%d", localtime(&timestamp));
     return buffer;
 }
 
+
+/**
+ * @brief In utils.c or another source file
+ */
+void clearInputBuffer() {
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF);
+}
+
+/**
+ * @brief Validates and gets an integer input within a specified range
+ * @param min The minimum allowed value
+ * @param max The maximum allowed value
+ * @return int The validated input
+ */
 int validateIntInput(int min, int max) {
     int input;
     char buffer[100];
@@ -51,6 +93,12 @@ int validateIntInput(int min, int max) {
     }
 }
 
+/**
+ * @brief Validates and gets a double input within a specified range
+ * @param min The minimum allowed value
+ * @param max The maximum allowed value
+ * @return double The validated input
+ */
 double validateDoubleInput(double min, double max) {
     double input;
     char buffer[100];
@@ -75,6 +123,12 @@ double validateDoubleInput(double min, double max) {
     }
 }
 
+/**
+ * @brief Validates and gets a string input
+ * @param output The buffer to store the validated input
+ * @param maxLength The maximum allowed length of the input
+ * @param prompt The prompt to display to the user
+ */
 void validateStringInput(char *output, int maxLength, const char *prompt) {
     char buffer[1000];
     
@@ -103,6 +157,11 @@ void validateStringInput(char *output, int maxLength, const char *prompt) {
     }
 }
 
+/**
+ * @brief Validates and gets a date input
+ * @param output The buffer to store the validated date string
+ * @return int 1 if input is valid, 0 otherwise
+ */
 int validateDateInput(char *output) {
     char buffer[11];
     struct tm tm;

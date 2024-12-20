@@ -1,5 +1,24 @@
-#include "admin.h"
-#include "utils.h"
+/*
+ * =====================================================================================
+ * File: admin.c
+ * Description: This file contains the implementation of administrative functions for
+ *              managing user accounts, backups, and system data. The functions include
+ *              displaying the admin menu, adding and viewing users, changing user
+ *              passwords, creating backups of system data, and restoring data from
+ *              backups.
+ *
+ *              The system stores user data in a binary file (data/users.dat) and
+ *              supports backup and restoration of multiple system data files.
+ *
+ * Author: Chiemezie Agbo
+ * Date: 20-12-2024
+ * Version: 1.0
+ *
+ * =====================================================================================
+ */
+
+#include "../include/admin.h"
+#include "../include/utils.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -8,6 +27,9 @@
 #define USERS_FILE "data/users.dat"
 #define BACKUP_DIR "data/backup/"
 
+/**
+ * @brief Displays the admin menu and handles user choices
+ */
 void adminMenu() {
     int choice;
     do {
@@ -52,6 +74,9 @@ void adminMenu() {
     } while (1);
 }
 
+/**
+ * @brief Adds a new user to the system
+ */
 void addUser() {
     User user;
     validateStringInput(user.username, MAX_USERNAME_LENGTH, "Enter username: ");
@@ -71,6 +96,9 @@ void addUser() {
     printf("User added successfully!\n");
 }
 
+/**
+ * @brief Displays all users in the system
+ */
 void viewUsers() {
     FILE *file = fopen(USERS_FILE, "rb");
     if (file == NULL) {
@@ -90,6 +118,9 @@ void viewUsers() {
     fclose(file);
 }
 
+/**
+ * @brief Creates a backup of the system data
+ */
 void backupData() {
     char timestamp[20];
     time_t now = time(NULL);
@@ -110,6 +141,9 @@ void backupData() {
     printf("Backup created successfully in %s%s/\n", BACKUP_DIR, timestamp);
 }
 
+/**
+ * @brief Restores system data from a backup
+ */
 void restoreData() {
     char backup_dir[256];
     validateStringInput(backup_dir, sizeof(backup_dir), "Enter the backup directory name (YYYYMMDD_HHMMSS): ");
@@ -122,13 +156,19 @@ void restoreData() {
 
     for (int i = 0; i < num_files; i++) {
         char command[512];
-        snprintf(command, sizeof(command), "cp %s%s data/", full_backup_path, files[i]);
+        snprintf(command, sizeof(command), "cp %.200s%.50s data/", full_backup_path, files[i]);
         system(command);
     }
 
     printf("Data restored successfully from %s\n", full_backup_path);
 }
 
+/**
+ * @brief Authenticates a user and returns their access level
+ * @param username The username to authenticate
+ * @param password The password to authenticate
+ * @return int 0 for failed login, 1 for regular user, 2 for admin
+ */
 int loginUser(char *username, char *password) {
     FILE *file = fopen(USERS_FILE, "rb");
     if (file == NULL) {
@@ -148,6 +188,10 @@ int loginUser(char *username, char *password) {
     return 0; // Login failed
 }
 
+/**
+ * @brief Changes the password for a given user
+ * @param username The username of the user whose password is to be changed
+ */
 void changePassword(char *username) {
     FILE *file = fopen(USERS_FILE, "rb+");
     if (file == NULL) {

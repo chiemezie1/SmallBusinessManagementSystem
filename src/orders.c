@@ -1,8 +1,22 @@
+/*
+ * =====================================================================================
+ * File: order_management.c
+ * Description: Implements the order management system, including placing, 
+ *              updating, and viewing orders. It handles inventory management 
+ *              and profit calculation based on order data, and manages order 
+ *              IDs and statuses.
+ *
+ * Author: Chiemezie Agbo
+ * Date: 20-12-2024
+ * Version: 1.0
+ * =====================================================================================
+ */
+
 #include <limits.h>
-#include "orders.h"
-#include "customers.h"
-#include "inventory.h"
-#include "utils.h"
+#include "../include/orders.h"
+#include "../include/customers.h"
+#include "../include/inventory.h"
+#include "../include/utils.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -11,6 +25,9 @@
 #define ORDERS_FILE "data/orders.dat"
 #define INVENTORY_FILE "data/inventory.dat"
 
+/**
+ * @brief Displays the order management menu and handles user choices
+ */
 void orderMenu() {
     int choice;
     do {
@@ -30,7 +47,10 @@ void orderMenu() {
 
         switch (choice) {
             case 1:
-                placeOrder();
+                {
+                    Order newOrder = {0};
+                    placeOrder(&newOrder);
+                }
                 break;
             case 2:
                 updateOrderStatus();
@@ -47,27 +67,30 @@ void orderMenu() {
     } while (1);
 }
 
-void placeOrder() {
-    Order order;
+/**
+ * @brief Places a new order in the system
+ * @param order Pointer to the Order struct to be added
+ */
+void placeOrder(Order *order) {
     Customer customer;
 
     // Get customer ID and validate
     do {
         printf("Enter customer ID: ");
-        order.customerId = validateIntInput(1, INT_MAX);
+        order->customerId = validateIntInput(1, INT_MAX);
 
-        if (!getCustomerById(order.customerId, &customer)) {
-            printf("Error: Customer with ID %d not found. Please try again.\n", order.customerId);
+        if (!getCustomerById(order->customerId, &customer)) {
+            printf("Error: Customer with ID %d not found. Please try again.\n", order->customerId);
         } else {
             break;
         }
     } while (1);
 
-    order.id = generateUniqueOrderId();
-    order.orderDate = time(NULL);
-    order.totalAmount = 0;
-    order.profit = 0;
-    strcpy(order.status, "Pending");
+    order->id = generateUniqueOrderId();
+    order->orderDate = time(NULL);
+    order->totalAmount = 0;
+    order->profit = 0;
+    strcpy(order->status, "Pending");
 
     int numItems;
     printf("Enter the number of items in this order: ");
@@ -106,8 +129,8 @@ void placeOrder() {
         // Update order total and profit
         double itemRevenue = item.price * quantity;
         double itemCost = item.cost * quantity;
-        order.totalAmount += itemRevenue;
-        order.profit += (itemRevenue - itemCost);
+        order->totalAmount += itemRevenue;
+        order->profit += (itemRevenue - itemCost);
     }
 
     FILE *file = fopen(ORDERS_FILE, "ab");
@@ -116,14 +139,17 @@ void placeOrder() {
         return;
     }
 
-    fwrite(&order, sizeof(Order), 1, file);
+    fwrite(order, sizeof(Order), 1, file);
     fclose(file);
 
     printf("Order placed successfully for customer %s (ID: %d)!\n", customer.name, customer.id);
-    printf("Order ID: %d\n", order.id);
-    printf("Total amount: $%.2f\n", order.totalAmount);
+    printf("Order ID: %d\n", order->id);
+    printf("Total amount: $%.2f\n", order->totalAmount);
 }
 
+/**
+ * @brief Updates the status of an existing order
+ */
 void updateOrderStatus() {
     int id;
     printf("Enter order ID to update: ");
@@ -174,6 +200,9 @@ void updateOrderStatus() {
     }
 }
 
+/**
+ * @brief Displays all orders in the system
+ */
 void viewAllOrders() {
     FILE *file = fopen(ORDERS_FILE, "rb");
     if (file == NULL) {
@@ -195,6 +224,9 @@ void viewAllOrders() {
     fclose(file);
 }
 
+/**
+ * @brief Searches for an order by its ID
+ */
 void searchOrder() {
     int id;
     printf("Enter order ID to search: ");
@@ -229,6 +261,10 @@ void searchOrder() {
     }
 }
 
+/**
+ * @brief Generates a unique order ID
+ * @return int The generated unique ID
+ */
 int generateUniqueOrderId() {
     static int lastId = 0;
     FILE *file = fopen(ORDERS_FILE, "rb");
@@ -242,5 +278,30 @@ int generateUniqueOrderId() {
         fclose(file);
     }
     return ++lastId;
+}
+
+/**
+ * @brief Retrieves an order by its ID
+ * @param id The ID of the order to retrieve
+ * @param order Pointer to the Order struct to store the retrieved information
+ * @return int 1 if order found, 0 otherwise
+ */
+int getOrderById(int id, Order *order) {
+    FILE *file = fopen(ORDERS_FILE, "rb");
+    if (file == NULL) {
+        printf("Error opening file!\n");
+        return 0;
+    }
+
+    int found = 0;
+    while (fread(order, sizeof(Order), 1, file)) {
+        if (order->id == id) {
+            found = 1;
+            break;
+        }
+    }
+
+    fclose(file);
+    return found;
 }
 
