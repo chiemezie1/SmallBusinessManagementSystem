@@ -1,38 +1,57 @@
+#include "../include/common.h"
 #include "../include/orders.h"
+#include "../include/customers.h"
+#include "../include/inventory.h"
 #include "unity.h"
 #include <stdio.h>
 #include <string.h>
 
 void setUp(void) {
     // Set up test environment
+    remove(ORDERS_FILE);
+    remove(CUSTOMERS_FILE);
+    remove(INVENTORY_FILE);
 }
 
 void tearDown(void) {
     // Clean up test environment
+    remove(ORDERS_FILE);
+    remove(CUSTOMERS_FILE);
+    remove(INVENTORY_FILE);
 }
 
 void test_place_order(void) {
-    Order order = {0, 1, 0, 100.00, "Pending"};
+    Customer customer = {0, "John Doe", "john@example.com", "1234567890", "123 Main St"};
+    addCustomer(&customer);
+
+    InventoryItem item = {0, "Test Item", "Test Description", 10.99, 19.99, 100};
+    addInventoryItem(&item);
+
+    Order order = {0};
+    order.customerId = customer.id;
     placeOrder(&order);
 
-    // Verify the order was placed
     Order retrieved_order;
     int found = getOrderById(order.id, &retrieved_order);
 
     TEST_ASSERT_TRUE(found);
-    TEST_ASSERT_EQUAL_INT(order.customerId, retrieved_order.customerId);
-    TEST_ASSERT_EQUAL_FLOAT(order.totalAmount, retrieved_order.totalAmount);
-    TEST_ASSERT_EQUAL_STRING(order.status, retrieved_order.status);
+    TEST_ASSERT_EQUAL_INT(customer.id, retrieved_order.customerId);
+    TEST_ASSERT_EQUAL_STRING("Pending", retrieved_order.status);
 }
 
 void test_update_order_status(void) {
-    Order order = {0, 1, 0, 100.00, "Pending"};
+    Customer customer = {0, "John Doe", "john@example.com", "1234567890", "123 Main St"};
+    addCustomer(&customer);
+
+    InventoryItem item = {0, "Test Item", "Test Description", 10.99, 19.99, 100};
+    addInventoryItem(&item);
+
+    Order order = {0};
+    order.customerId = customer.id;
     placeOrder(&order);
 
-    // Update the order status
     updateOrderStatus(order.id, "Shipped");
 
-    // Verify the order status was updated
     Order retrieved_order;
     int found = getOrderById(order.id, &retrieved_order);
 

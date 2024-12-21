@@ -6,6 +6,12 @@
 #include <string.h>
 #include <time.h>
 
+#define INVENTORY_FILE "data/inventory.dat"
+#define ORDERS_FILE "data/orders.dat"
+#define CUSTOMERS_FILE "data/customers.dat"
+#define USERS_FILE "data/users.dat"
+#define BACKUP_DIR "data/backup/"
+
 #define MAX_NAME_LENGTH 50
 #define MAX_DESCRIPTION_LENGTH 200
 #define MAX_EMAIL_LENGTH 100

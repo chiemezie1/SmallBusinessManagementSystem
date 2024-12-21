@@ -6,17 +6,18 @@
 
 void setUp(void) {
     // Set up test environment
+    remove(CUSTOMERS_FILE);
 }
 
 void tearDown(void) {
     // Clean up test environment
+    remove(CUSTOMERS_FILE);
 }
 
 void test_add_customer(void) {
     Customer customer = {0, "John Doe", "john@example.com", "1234567890", "123 Main St"};
     addCustomer(&customer);
 
-    // Verify the customer was added
     Customer retrieved_customer;
     int found = getCustomerById(customer.id, &retrieved_customer);
 
@@ -31,12 +32,10 @@ void test_update_customer(void) {
     Customer customer = {0, "John Doe", "john@example.com", "1234567890", "123 Main St"};
     addCustomer(&customer);
 
-    // Update the customer
     strcpy(customer.email, "johndoe@example.com");
     strcpy(customer.phone, "9876543210");
     updateCustomer(&customer);
 
-    // Verify the customer was updated
     Customer retrieved_customer;
     int found = getCustomerById(customer.id, &retrieved_customer);
 
@@ -49,10 +48,8 @@ void test_delete_customer(void) {
     Customer customer = {0, "John Doe", "john@example.com", "1234567890", "123 Main St"};
     addCustomer(&customer);
 
-    // Delete the customer
     deleteCustomer(customer.id);
 
-    // Verify the customer was deleted
     Customer retrieved_customer;
     int found = getCustomerById(customer.id, &retrieved_customer);
 

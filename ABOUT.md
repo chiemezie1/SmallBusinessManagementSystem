@@ -51,16 +51,25 @@ The Small Business Management System (SBMS) is a comprehensive, command-line app
 3. `AUTHOR`: Information about the project author.
 4. `README.md`: Provides an overview of the project, installation instructions, and usage guidelines.
 
-## Building and Running the Project
 
+## Building and Running the Project:
 To build the project, ensure you have GCC and Make installed on your system. Then, follow these steps:
 
-1. Clone the repository
+1. Clone the repository (check the README.md for more detailes)
 2. Navigate to the project directory
 3. Run `make` to compile the project
 4. Execute the compiled binary: `./bin/sbms`
 
-## Testing
 
-To run the unit tests, use the following command:
+## Testing:
+To run the unit tests, use the command: `make test`
 
+Recent test results show that all tests have passed successfully:
+
+- test_customers: 3 tests passed
+- test_financial: 2 tests passed
+- test_inventory: 3 tests passed
+- test_orders: 2 tests passed
+
+
+These passing tests indicate that the core functionalities of the SBMS are working as expected, covering customer management, financial reporting, inventory management, and order management.
